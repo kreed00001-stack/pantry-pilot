@@ -33,7 +33,10 @@ service cloud.firestore {
       return isAuthenticated() && exists(/databases/$(database)/documents/sharedLists/$(listId)/members/$(request.auth.uid));
     }
     function isListOwner(listId) {
-      return isAuthenticated() && exists(listDoc(listId)) && get(listDoc(listId)).data.ownerUid == request.auth.uid;
+      return isAuthenticated() && (
+        (exists(listDoc(listId)) && get(listDoc(listId)).data.ownerUid == request.auth.uid) ||
+        (existsAfter(listDoc(listId)) && getAfter(listDoc(listId)).data.ownerUid == request.auth.uid)
+      );
     }
     function isValidSharedList(data) {
       return data.keys().hasAll(['ownerUid', 'name', 'payload', 'createdAt', 'updatedAt']) &&
